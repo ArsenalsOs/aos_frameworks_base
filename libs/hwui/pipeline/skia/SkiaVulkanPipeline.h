@@ -66,7 +66,6 @@ protected:
 private:
     renderthread::VulkanManager& vulkanManager();
     renderthread::VulkanSurface* mVkSurface = nullptr;
-    sp<ANativeWindow> mNativeWindow;
 };
 
 } /* namespace skiapipeline */
