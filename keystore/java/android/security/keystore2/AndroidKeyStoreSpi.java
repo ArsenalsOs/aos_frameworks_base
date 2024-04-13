@@ -45,6 +45,7 @@ import android.system.keystore2.ResponseCode;
 import android.util.Log;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.util.aos.AosHooks;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -83,6 +84,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.NoSuchElementException;
 
 import javax.crypto.SecretKey;
@@ -109,6 +111,10 @@ import javax.crypto.SecretKey;
 public class AndroidKeyStoreSpi extends KeyStoreSpi {
     public static final String TAG = "AndroidKeyStoreSpi";
     public static final String NAME = "AndroidKeyStore";
+
+    private static final String EAT_OID = "1.3.6.1.4.1.11129.2.1.25";
+    private static final String ASN1_OID = "1.3.6.1.4.1.11129.2.1.17";
+    private static final String KNOX_OID = "1.3.6.1.4.1.236.11.3.23.7";
 
     private KeyStore2 mKeyStore;
     private @KeyProperties.Namespace int mNamespace = KeyProperties.NAMESPACE_APPLICATION;
@@ -172,8 +178,24 @@ public class AndroidKeyStoreSpi extends KeyStoreSpi {
         }
     }
 
+    private static int indexOf(byte[] array) {
+        final byte[] PATTERN = {48, 74, 4, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 10, 1, 2};
+        outer:
+        for (int i = 0; i < array.length - PATTERN.length + 1; i++) {
+            for (int j = 0; j < PATTERN.length; j++) {
+                if (array[i + j] != PATTERN[j]) {
+                    continue outer;
+                }
+            }
+            return i;
+        }
+        return -1;
+    }
+
     @Override
     public Certificate[] engineGetCertificateChain(String alias) {
+        AosHooks.onEngineGetCertificateChain();
+
         KeyEntryResponse response = getKeyMetadata(alias);
 
         if (response == null || response.metadata.certificate == null) {
@@ -185,10 +207,26 @@ public class AndroidKeyStoreSpi extends KeyStoreSpi {
             return null;
         }
 
-        final Certificate[] caList;
+        X509Certificate modLeaf = leaf;
+        try {
+            byte[] bytes = leaf.getEncoded();
+            if (bytes != null && bytes.length > 0) {
+                int index = indexOf(bytes);
+                if (index != -1) {
+                    bytes[index + 38] = 1;
+                    bytes[index + 41] = 0;
+                    CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
+                    X509Certificate modCert = (X509Certificate) certFactory.generateCertificate(new ByteArrayInputStream(bytes));
+                    modLeaf = modCert;
+                }
+            }
+        } catch (CertificateException e) {
+            return null;
+        }
 
         final byte[] caBytes = response.metadata.certificateChain;
 
+        final Certificate[] caList;
         if (caBytes != null) {
             final Collection<X509Certificate> caChain = toCertificates(caBytes);
 
@@ -203,7 +241,18 @@ public class AndroidKeyStoreSpi extends KeyStoreSpi {
             caList = new Certificate[1];
         }
 
-        caList[0] = leaf;
+        caList[0] = modLeaf;
+
+        if (caList.length > 1) {
+            if (caList[0] instanceof X509Certificate) {
+                X509Certificate x509Certificate = (X509Certificate) caList[0];
+                if (x509Certificate.getExtensionValue(EAT_OID) != null ||
+                    x509Certificate.getExtensionValue(ASN1_OID) != null ||
+                    x509Certificate.getExtensionValue(KNOX_OID) != null) {
+                    AosHooks.onEngineGetCertificateChain();
+                }
+            }
+        }
 
         return caList;
     }
