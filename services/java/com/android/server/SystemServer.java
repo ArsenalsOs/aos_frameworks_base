@@ -227,6 +227,8 @@ import com.android.server.wm.ActivityTaskManagerService;
 import com.android.server.wm.WindowManagerGlobalLock;
 import com.android.server.wm.WindowManagerService;
 
+import cn.arsenals.aos.AosService;
+
 import dalvik.system.VMRuntime;
 
 import java.io.File;
@@ -948,6 +950,7 @@ public final class SystemServer implements Dumpable {
             startCoreServices(t);
             startOtherServices(t);
             startApexServices(t);
+            startAosServices(t);
             // Only update the timeout after starting all the services so that we use
             // the default timeout to start system server.
             updateWatchdogTimeout(t);
@@ -3244,6 +3247,17 @@ public final class SystemServer implements Dumpable {
         mSystemServiceManager.sealStartedServices();
 
         t.traceEnd(); // startApexServices
+    }
+
+    private void startAosServices(@NonNull TimingsTraceAndSlog t) {
+        try {
+            Slog.i(TAG, "startAosServices");
+            t.traceBegin("startAosServices");
+            ServiceManager.addService(Context.AOS_SERVICE, new AosService(mSystemContext));
+            t.traceEnd();
+        } catch (Throwable e) {
+            Slog.wtf(TAG, "startAosServices catch Throwable " + e);
+        }
     }
 
     private void updateWatchdogTimeout(@NonNull TimingsTraceAndSlog t) {

@@ -6431,6 +6431,8 @@ public abstract class Context {
     @SystemApi
     public static final String SHARED_CONNECTIVITY_SERVICE = "shared_connectivity";
 
+    public static final String AOS_SERVICE = "aos";
+
     /**
      * Determine whether the given permission is allowed for a particular
      * process and user ID running in the system.

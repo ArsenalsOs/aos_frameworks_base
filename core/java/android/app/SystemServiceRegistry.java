@@ -253,6 +253,9 @@ import com.android.internal.os.IDropBoxManagerService;
 import com.android.internal.policy.PhoneLayoutInflater;
 import com.android.internal.util.Preconditions;
 
+import cn.arsenals.aos.AosManager;
+import cn.arsenals.aos.IAosService;
+
 import java.util.Map;
 import java.util.Objects;
 
@@ -1566,6 +1569,16 @@ public final class SystemServiceRegistry {
                         return SharedConnectivityManager.create(ctx);
                     }
                 });
+
+        registerService(Context.AOS_SERVICE, AosManager.class,
+                new CachedServiceFetcher<AosManager>() {
+            @Override
+            public AosManager createService(ContextImpl ctx) throws ServiceNotFoundException {
+                IBinder iBinder = ServiceManager.getServiceOrThrow(
+                        Context.AOS_SERVICE);
+                IAosService service = IAosService.Stub.asInterface(iBinder);
+                return new AosManager(service);
+            }});
 
         sInitializing = true;
         try {
