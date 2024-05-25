@@ -6431,6 +6431,12 @@ public abstract class Context {
     @SystemApi
     public static final String SHARED_CONNECTIVITY_SERVICE = "shared_connectivity";
 
+    /**
+     * Arsenals OS Service
+     *
+     * @hide
+     */
+    @SystemApi
     public static final String AOS_SERVICE = "aos";
 
     /**

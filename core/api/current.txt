@@ -10341,7 +10341,6 @@ package android.content {
     field public static final String ACCOUNT_SERVICE = "account";
     field public static final String ACTIVITY_SERVICE = "activity";
     field public static final String ALARM_SERVICE = "alarm";
-    field public static final String AOS_SERVICE = "aos";
     field public static final String APPWIDGET_SERVICE = "appwidget";
     field public static final String APP_OPS_SERVICE = "appops";
     field public static final String APP_SEARCH_SERVICE = "app_search";

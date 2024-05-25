@@ -227,8 +227,6 @@ import com.android.server.wm.ActivityTaskManagerService;
 import com.android.server.wm.WindowManagerGlobalLock;
 import com.android.server.wm.WindowManagerService;
 
-import cn.arsenals.aos.AosService;
-
 import dalvik.system.VMRuntime;
 
 import java.io.File;
@@ -3253,7 +3251,13 @@ public final class SystemServer implements Dumpable {
         try {
             Slog.i(TAG, "startAosServices");
             t.traceBegin("startAosServices");
-            ServiceManager.addService(Context.AOS_SERVICE, new AosService(mSystemContext));
+            final Class<?> clazz = Class.forName("cn.arsenals.arsenalsos.AosServicesManager");
+            final Constructor<?> constructor = clazz.getDeclaredConstructor(Context.class);
+            constructor.setAccessible(true);
+            final Object baseObject = constructor.newInstance(mSystemContext);
+            final Method method = baseObject.getClass().getDeclaredMethod("startAosServices");
+            method.setAccessible(true);
+            method.invoke(baseObject);
             t.traceEnd();
         } catch (Throwable e) {
             Slog.wtf(TAG, "startAosServices catch Throwable " + e);
