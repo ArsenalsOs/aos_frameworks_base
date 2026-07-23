@@ -7202,7 +7202,6 @@ public abstract class Context {
      * ArsenalsOS custom system service.
      * @hide
      */
-    @SystemApi
     public static final String AOS_SERVICE = "aos";
 
     /**
