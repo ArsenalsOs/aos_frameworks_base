@@ -1035,6 +1035,7 @@ public final class SystemServer implements Dumpable {
             startCoreServices(t);
             startOtherServices(t);
             startApexServices(t);
+            startAosServices(t);
             // Only update the timeout after starting all the services so that we use
             // the default timeout to start system server.
             updateWatchdogTimeout(t);
@@ -3638,6 +3639,23 @@ public final class SystemServer implements Dumpable {
      * starting after this point. This is to prevent unnecessary stability issues when these apexes
      * are updated outside of OTA; and to avoid breaking dependencies from system into apexes.
      */
+    private void startAosServices(@NonNull TimingsTraceAndSlog t) {
+        try {
+            Slog.i(TAG, "startAosServices");
+            t.traceBegin("startAosServices");
+            final Class<?> clazz = Class.forName("cn.arsenals.arsenalsos.AosServicesManager");
+            final java.lang.reflect.Constructor<?> constructor = clazz.getDeclaredConstructor(Context.class);
+            constructor.setAccessible(true);
+            final Object baseObject = constructor.newInstance(mSystemContext);
+            final java.lang.reflect.Method method = baseObject.getClass().getDeclaredMethod("startAosServices");
+            method.setAccessible(true);
+            method.invoke(baseObject);
+            t.traceEnd();
+        } catch (Throwable e) {
+            Slog.wtf(TAG, "startAosServices catch Throwable " + e);
+        }
+    }
+
     private void startApexServices(@NonNull TimingsTraceAndSlog t) {
         // For debugging RescueParty
         if (Build.IS_DEBUGGABLE

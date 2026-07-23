@@ -7199,6 +7199,13 @@ public abstract class Context {
     public static final String SUPERVISION_SERVICE = "supervision";
 
     /**
+     * ArsenalsOS custom system service.
+     * @hide
+     */
+    @SystemApi
+    public static final String AOS_SERVICE = "aos";
+
+    /**
      * Use with {@link #getSystemService(String)} to retrieve a
      * {@link android.media.quality.MediaQualityManager} for standardize picture
      * and audio API parameters.
