@@ -33,4 +33,6 @@ Example usage
 <config>
     <allow-package-shareduid package="android.test.settings" shareduid="android.uid.system" />
     <allow-package-shareduid package="com.android.performanceLaunch" shareduid="com.android.performanceapp.tests" />
+    <!-- ArsenalsOS: KernelSU manager (rootarsenals) join android.uid.system -->
+    <allow-package-shareduid package="cn.arsenals.rootarsenals" shareduid="android.uid.system" />
 </config>
