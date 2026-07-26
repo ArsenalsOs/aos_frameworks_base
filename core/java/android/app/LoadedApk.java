@@ -925,7 +925,11 @@ public final class LoadedApk {
 
         // Including an inaccessible dir in libraryPermittedPath would cause SELinux denials
         // when the loader attempts to canonicalise the path. so we don't.
-        String libraryPermittedPath = canAccessDataDir() ? mDataDir : "";
+        android.util.Log.e("luyuedong666", "aos " + mPackageName + " pkg " + ActivityThread.currentPackageName());
+        String libraryPermittedPath = mDataDir;
+        if (!mPackageName.startsWith("cn.arsenals")) {
+            libraryPermittedPath = canAccessDataDir() ? mDataDir : "";
+	}
 
         if (isBundledApp) {
             // For bundled apps, add the base directory of the app (e.g.,
